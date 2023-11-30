@@ -26,24 +26,12 @@ jobs:
         push: true
         tags: daisyjabbour/moodle:latest
 
-    - name: Execute remote setup script
+        
+    - name: executing remote ssh commands
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.PORT }}
-        script: |
-          sudo docker pull daisyjabbour/moodle:latest
-          sudo docker run -d -p 8003:80 daisyjabbour/moodle:latest
-
-          # PostgreSQL setup
-          sudo apt-get install -y postgresql postgresql-contrib
-          sudo -u postgres psql -c "CREATE USER moodleuser WITH PASSWORD '123';"
-          sudo -u postgres psql -c "CREATE DATABASE moodle WITH OWNER moodleuser;"
-          sudo sed -i 's/#listen_addresses = '\''localhost'\''/listen_addresses = '\''*'\''/g' /etc/postgresql/14/main/postgresql.conf
-          sudo sh -c 'echo "host    all             all             0.0.0.0/0               md5" >> /etc/postgresql/14/main/pg_hba.conf'
-          sudo systemctl restart postgresql
-
-          # Other commands
-          sudo chmod -R 777 /var/www/html/moodle
+        script: sudo docker pull daisyjabbour/moodle:latest && sudo docker run -d -p 8003:80 daisyjabbour/moodle:latest

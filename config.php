@@ -40,7 +40,7 @@ $CFG = new stdClass();
 
 $CFG->dbtype    = 'pgsql';      // 'pgsql', 'mariadb', 'mysqli', 'auroramysql', 'sqlsrv' or 'oci'
 $CFG->dblibrary = 'native';     // 'native' only at the moment
-$CFG->dbhost    = '3.70.247.132';  // eg 'localhost' or 'db.isp.com' or IP
+$CFG->dbhost    = 'localhost';  // eg 'localhost' or 'db.isp.com' or IP
 $CFG->dbname    = 'moodle';     // database name, eg moodle
 $CFG->dbuser    = 'moodleuser';   // your database username
 $CFG->dbpass    = '123';   // your database password
@@ -137,7 +137,7 @@ $CFG->dboptions = array(
 // If you need both intranet and Internet access please read
 // http://docs.moodle.org/en/masquerading
 
-$CFG->wwwroot   = 'http://3.70.247.132/moodle';
+$CFG->wwwroot   = 'http://3.70.247.132:8003/moodle';
 
 
 //=========================================================================

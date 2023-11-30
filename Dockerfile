@@ -18,7 +18,7 @@ RUN add-apt-repository ppa:ondrej/php && apt-get update
 RUN apt-get install -y \
     php7.4 \
     php7.4-pgsql \
-    libapache2-mod-php \
+    libapache2-mod-php7.4 \
     graphviz \
     aspell \
     ghostscript \

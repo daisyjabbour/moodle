@@ -51,14 +51,16 @@ RUN chmod -R 0755 /var/www/html/moodle
 # Fix deprecated string syntax
 RUN find /var/www/html/moodle -type f -name '*.php' -exec sed -i 's/\${\([^}]*\)}/{$\1}/g' {} +
 
-# PostgreSQL setup
-USER postgres
-RUN /etc/init.d/postgresql start && \
-    psql --command "CREATE USER moodleuser WITH PASSWORD '123';" && \
-    createdb -O moodleuser moodle
+# Expose ports
+EXPOSE 80
 
-USER root
-
-# Restart Apache
+# Start Apache and PostgreSQL setup
 CMD service apache2 restart && \
+    /etc/init.d/postgresql start && \
+    psql --command "CREATE USER moodleuser WITH PASSWORD '123';" && \
+    createdb -O moodleuser moodle && \
+    sed -i 's/#listen_addresses = '\''localhost'\''/listen_addresses = '\''*'\''/g' /etc/postgresql/14/main/postgresql.conf && \
+    sh -c 'echo "host    all             all             0.0.0.0/0               md5" >> /etc/postgresql/14/main/pg_hba.conf' && \
+    systemctl restart postgresql && \
+    chmod -R 777 /var/www/html/moodle && \
     tail -f /dev/null

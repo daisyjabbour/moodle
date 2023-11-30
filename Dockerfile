@@ -9,7 +9,7 @@ RUN apt-get update && \
     software-properties-common \
     postgresql \
     postgresql-contrib \
-    
+    && rm -rf /var/lib/apt/lists/*
 
 # Add PHP repository
 RUN add-apt-repository ppa:ondrej/php && apt-get update
@@ -34,7 +34,7 @@ RUN apt-get install -y \
     php7.4-zip \
     php7.4-soap \
     php7.4-mbstring \
-    
+    && rm -rf /var/lib/apt/lists/*
 
 # Enable Apache modules
 RUN a2enmod rewrite

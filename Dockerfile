@@ -1,25 +1,122 @@
-# Use an official Python runtime as a base image
-FROM python:3.9
+# Use the official Ubuntu 20.04 image
+FROM ubuntu:20.04
 
-# Set environment variables for PostgreSQL
-ENV POSTGRES_USER=moodleuser
-ENV POSTGRES_PASSWORD=your_password
-ENV POSTGRES_DB=moodle
+# Install necessary packages
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    apache2 \
+    git \
+    software-properties-common \
+    postgresql \
+    postgresql-contrib \
+    && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory inside the container
-WORKDIR /app
+# Add PHP repository
+RUN add-apt-repository ppa:ondrej/php && apt-get update
 
-# Copy the local requirements.txt to the container
-COPY requirements.txt .
+# Install PHP 7.4 and required extensions
+RUN apt-get install -y \
+    php7.4 \
+    php7.4-pgsql \
+    libapache2-mod-php7.4 \
+    graphviz \
+    aspell \
+    ghostscript \
+    clamav \
+    php7.4-pspell \
+    php7.4-curl \
+    php7.4-gd \
+    php7.4-intl \
+    php7.4-mysql \
+    php7.4-xml \
+    php7.4-xmlrpc \
+    php7.4-ldap \
+    php7.4-zip \
+    php7.4-soap \
+    php7.4-mbstring \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Enable Apache modules
+RUN a2enmod rewrite
 
-# Copy the local code to the container
-COPY . .
+# Copy local Moodle repository into the Docker image
+COPY . /var/www/html/moodle
 
-# Expose the port your app runs on (adjust as needed)
-EXPOSE 8000
+# Create moodledata directory
+RUN mkdir /var/moodledata && chown -R www-data /var/moodledata && chmod -R 777 /var/moodledata
 
-# Run migrations and start the application
-CMD ["python", "manage.py", "migrate", "&&", "python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Set permissions for Moodle directory
+RUN chmod -R 0755 /var/www/html/moodle
+
+# Fix deprecated string syntax
+RUN find /var/www/html/moodle -type f -name '*.php' -exec sed -i 's/\${\([^}]*\)}/{$\1}/g' {} +
+
+# Restart Apache
+RUN service apache2 restart
+
+# Expose ports
+EXPOSE 80
+
+# Start Apache in the foreground
+CMD ["apache2ctl", "-D", "FOREGROUND"]
+# Use the official Ubuntu 20.04 image
+FROM ubuntu:20.04
+
+# Install necessary packages
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    apache2 \
+    git \
+    software-properties-common \
+    postgresql \
+    postgresql-contrib \
+    && rm -rf /var/lib/apt/lists/*
+
+# Add PHP repository
+RUN add-apt-repository ppa:ondrej/php && apt-get update
+
+# Install PHP 7.4 and required extensions
+RUN apt-get install -y \
+    php7.4 \
+    php7.4-pgsql \
+    libapache2-mod-php7.4 \
+    graphviz \
+    aspell \
+    ghostscript \
+    clamav \
+    php7.4-pspell \
+    php7.4-curl \
+    php7.4-gd \
+    php7.4-intl \
+    php7.4-mysql \
+    php7.4-xml \
+    php7.4-xmlrpc \
+    php7.4-ldap \
+    php7.4-zip \
+    php7.4-soap \
+    php7.4-mbstring \
+    && rm -rf /var/lib/apt/lists/*
+
+# Enable Apache modules
+RUN a2enmod rewrite
+
+# Copy local Moodle repository into the Docker image
+COPY . /var/www/html/moodle
+
+# Create moodledata directory
+RUN mkdir /var/moodledata && chown -R www-data /var/moodledata && chmod -R 777 /var/moodledata
+
+# Set permissions for Moodle directory
+RUN chmod -R 0755 /var/www/html/moodle
+
+# Fix deprecated string syntax
+RUN find /var/www/html/moodle -type f -name '*.php' -exec sed -i 's/\${\([^}]*\)}/{$\1}/g' {} +
+
+# Restart Apache
+RUN service apache2 restart
+
+# Expose ports
+EXPOSE 80
+
+# Start Apache in the foreground
+CMD ["apache2ctl", "-D", "FOREGROUND"]

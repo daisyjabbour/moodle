@@ -26,22 +26,18 @@ jobs:
         push: true
         tags: daisyjabbour/moodle:latest
 
-    - name: Build PostgreSQL container
+    - name: Start PostgreSQL container
       run: |
-        docker build -t daisyjabbour/postgresql:latest - <<EOF
-        FROM postgres:latest
-        RUN sudo -u postgres psql -c "CREATE USER moodleuser WITH PASSWORD '123';"
-        RUN sudo -u postgres psql -c "CREATE DATABASE moodle WITH OWNER moodleuser;"
-        EOF
+        sudo docker run -d \
+          --name postgres-moodle \
+          -e POSTGRES_USER=moodleuser \
+          -e POSTGRES_PASSWORD=123 \
+          -e POSTGRES_DB=moodle \
+          -p 5432:5432 \
+          postgres:13
+        sleep 10  # Wait for PostgreSQL to initialize
 
-    - name: Push PostgreSQL container
-      uses: docker/build-push-action@v2
-      with:
-        context: .
-        push: true
-        tags: daisyjabbour/postgresql:latest
-
-    - name: Execute remote SSH commands
+    - name: executing remote ssh commands
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.HOST }}
@@ -50,7 +46,4 @@ jobs:
         port: ${{ secrets.PORT }}
         script: |
           sudo docker pull daisyjabbour/moodle:latest
-          sudo docker pull daisyjabbour/postgresql:latest
-          sudo docker run -d -p 81:80 --name moodle-db daisyjabbour/postgresql:latest
-          sudo docker exec -it moodle-db sudo -u postgres psql -c "CREATE USER moodleuser WITH PASSWORD '123';"
-          sudo docker exec -it moodle-db sudo -u postgres psql -c "CREATE DATABASE moodle WITH OWNER moodleuser;"
+          sudo docker run -d -p 81:80 daisyjabbour/moodle:latest

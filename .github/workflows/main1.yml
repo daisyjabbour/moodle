@@ -1,4 +1,4 @@
-name: Build and Push Docker image
+name: Build and Deploy Docker Image
 
 on:
   push:
@@ -6,12 +6,15 @@ on:
       - MOODLE_403_STABLE
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
+
+    - name: Build Docker image
+      run: docker build -t daisyjabbour/moodle:latest .
 
     - name: Login to DockerHub
       uses: docker/login-action@v1
@@ -19,31 +22,23 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v2
-      with:
-        context: .
-        push: true
-        tags: daisyjabbour/moodle:latest
+    - name: Push Docker image
+      run: docker push daisyjabbour/moodle:latest
 
-    - name: Start PostgreSQL container
-      run: |
-        sudo docker run -d \
-          --name postgres-moodle \
-          -e POSTGRES_USER=moodleuser \
-          -e POSTGRES_PASSWORD=123 \
-          -e POSTGRES_DB=moodle \
-          -p 5432:5432 \
-          postgres:13
-        sleep 10  # Wait for PostgreSQL to initialize
-
-    - name: executing remote ssh commands
+    - name: executing remote ssh commands to create moodle container
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.PORT }}
-        script: |
-          sudo docker pull daisyjabbour/moodle:latest
-          sudo docker run -d -p 81:80 daisyjabbour/moodle:latest
+        script: sudo docker pull daisyjabbour/moodle:latest && sudo docker run -d -p 82:80 --name moodle daisyjabbour/moodle:latest
+
+    - name: executing remote ssh commands to create postgres container
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.PORT }}
+        script: sudo docker run -d --name postgres -e POSTGRES_PASSWORD=123 -p 5432:5432 postgres:13

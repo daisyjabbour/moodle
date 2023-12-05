@@ -34,22 +34,4 @@ jobs:
         port: ${{ secrets.PORT }}
         script: sudo docker pull daisyjabbour/moodle:latest && sudo docker run -d -p 80:80 --name moodle  daisyjabbour/moodle:latest
 
-    - name: executing remote ssh commands
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.SSH_KEY }}
-        port: ${{ secrets.PORT }}
-        script: sudo docker run -d --name postgres -e POSTGRES_PASSWORD=123 -p 5432:5432 postgres:13
-   
-    - name: executing remote ssh commands
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.SSH_KEY }}
-        port: ${{ secrets.PORT }}
-        script: sudo docker exec postgres psql -U postgres -c "CREATE USER moodleuser WITH PASSWORD '123';" && sudo docker exec postgres psql -U postgres -c "CREATE DATABASE moodle OWNER moodleuser;"
-
             

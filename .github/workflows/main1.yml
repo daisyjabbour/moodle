@@ -34,4 +34,12 @@ jobs:
         port: ${{ secrets.PORT }}
         script: sudo docker pull daisyjabbour/moodle:latest && sudo docker run -d -p 80:80 --name moodle -v ~/moodle_logs:/var/log/apache2/ daisyjabbour/moodle
 
+    - name: executing remote ssh commands
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.PORT }}
+        script: ~/script.sh
             
